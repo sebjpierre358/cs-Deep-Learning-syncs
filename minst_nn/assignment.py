@@ -34,6 +34,8 @@ class Model:
         """
         # TODO: Write the forward pass logic for your model
         # TODO: Calculate, then return, the probability for each class per image using the Softmax equation
+        self.batch_size = inputs.shape[0]
+
         L = np.ndarray((self.batch_size, self.num_classes), dtype=np.float32)
         for i in range(self.batch_size):
             l = np.sum((self.W * inputs[i]), axis=1)
@@ -60,20 +62,20 @@ class Model:
         # TODO: calculate average cross entropy loss for a batch
         total_loss = 0
         for e in range(self.batch_size):
-            print("label of image " + str(e) + " is " + str(labels[e]))
+            #print("label of image " + str(e) + " is " + str(labels[e]))
 
-            print("probability guessed " + str(labels[e]) + ": " +
-            str(probabilities[e][labels[e]]))
+            #print("probability guessed " + str(labels[e]) + ": " +
+            #str(probabilities[e][labels[e]]))
 
             error = -np.log(probabilities[e][labels[e]])
-            print("loss for example " + str(e) + ": " + str(error) + "\n")
+            #print("loss for example " + str(e) + ": " + str(error) + "\n")
 
             total_loss += error
 
-        print("TOTAL loss this batch: " + str(total_loss))
+        #print("TOTAL loss this batch: " + str(total_loss))
 
         avg_loss = total_loss / self.batch_size
-        print("AVERAGE LOSS THIS BATCH: " + str(avg_loss))
+        #print("AVERAGE LOSS THIS BATCH: " + str(avg_loss))
 
         return avg_loss
 
@@ -93,11 +95,25 @@ class Model:
         """
         # TODO: calculate the gradients for the weights and the gradients for the bias with respect to average loss
         #print(probabilities.shape)
-        one_hot = np.zeros((self.batch_size, self.num_classes))
-        print(one_hot.shape)
+        one_hot = np.zeros((self.batch_size, self.num_classes), dtype=np.float32)
+        img_probs = np.ndarray((self.batch_size,))
+        for i in range(self.batch_size):
+            label = labels[i]
+            one_hot[i][label] = 1.0
+            #img_probs[i] = probabilities[i][label]
 
+        dp_dl = np.transpose(np.transpose((one_hot - probabilities))) #*img_probs)
+        #pseudocode doesn't mulitiply by img_probs, so hmmmmm
 
-        pass
+        gradB = np.sum(dp_dl, 0) * self.learning_rate / self.batch_size
+        gradW = np.zeros((self.input_size, self.num_classes), dtype=np.float32)
+
+        for i in range(self.batch_size):
+            for j in range(self.input_size):
+                gradW[j] = gradW[j] + (dp_dl[i] * inputs[i][j] * self.learning_rate)
+
+        gradW = np.transpose(gradW * (1/self.batch_size)) #average the gradient
+        return (gradW, gradB)
 
     def accuracy(self, probabilities, labels):
         """
@@ -108,8 +124,14 @@ class Model:
         :return: Float (0,1) that contains batch accuracy
         """
         # TODO: calculate the batch accuracy
+        num_correct = 0.0
+        model_predictions = np.argmax(probabilities, axis=1)
 
-        pass
+        for i in range(self.batch_size):
+            if model_predictions[i] == labels[i]:
+                num_correct += 1.0
+
+        return num_correct / self.batch_size
 
     def gradient_descent(self, gradW, gradB):
         '''
@@ -119,9 +141,8 @@ class Model:
         :param gradB: gradient for biases
         :return: None
         '''
-        # TODO: change the weights and biases of the model to descent the gradient
-
-        pass
+        self.W = self.W + gradW
+        self.b = self.b + gradB
 
 def train(model, train_inputs, train_labels):
     '''
@@ -135,8 +156,19 @@ def train(model, train_inputs, train_labels):
 
     # TODO: Iterate over the training inputs and labels, in model.batch_size increments
     # TODO: For every batch, compute then descend the gradients for the model's weights
+    batch = 0
+    model.batch_size = train_inputs.shape[0]
 
-    pass
+    while batch < train_labels.size:
+        batch_inputs = train_inputs[batch : batch + model.batch_size]
+        batch_labels = train_labels[batch : batch + model.batch_size]
+
+        probs = model.call(batch_inputs)
+        #model.loss(probs, batch_labels)
+        gradW, gradB = model.back_propagation(batch_inputs, probs, batch_labels)
+        model.gradient_descent(gradW, gradB)
+
+        batch += model.batch_size
 
 def test(model, test_inputs, test_labels):
     """
@@ -147,11 +179,14 @@ def test(model, test_inputs, test_labels):
     :param test_labels: MNIST test labels (all corresponding labels)
     :return: accuracy - Float (0,1)
     """
-
     # TODO: Iterate over the testing inputs and labels
     # TODO: Return accuracy across testing set
 
-    pass
+    model.batch_size = test_labels.size
+    probs = model.call(test_inputs)
+
+    return model.accuracy(probs, test_labels)
+
 
 def visualize_results(image_inputs, probabilities, image_labels):
     """
@@ -185,11 +220,13 @@ def main():
     batches you run through in a single epoch. You should receive a final accuracy on the testing examples of > 80%.
     :return: None
     '''
-    inputs, labels = get_data('MNIST_data/t10k-images-idx3-ubyte.gz', 'MNIST_data/t10k-labels-idx1-ubyte.gz', 10000)
+    train_inputs, train_labels = get_data('MNIST_data/train-images-idx3-ubyte.gz', 'MNIST_data/train-labels-idx1-ubyte.gz', 60000)
+    test_inputs, test_labels = get_data('MNIST_data/t10k-images-idx3-ubyte.gz', 'MNIST_data/t10k-labels-idx1-ubyte.gz', 10000)
     model = Model()
-    probs = model.call(inputs)
-    model.loss(probs, labels)
-    model.back_propagation(inputs, probs, labels)
+    train(model, train_inputs, train_labels)
+    #accuracy = test(model, test_inputs, test_labels)
+    #print("accuracy: " + str((accuracy) * 100) + "%")
+
 
     # TODO: load MNIST train and test examples into train_inputs, train_labels, test_inputs, test_labels
 
