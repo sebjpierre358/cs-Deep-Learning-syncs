@@ -1,1 +1,7 @@
 README
+
+After one epoch, the accuracy of the model is
+90.53%
+
+The training takes ~2:30mins on a dept machine most likely due to a
+sub-optimal backpropogation implementation. Other than that, no bugs 
