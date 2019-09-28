@@ -34,6 +34,7 @@ class Model:
         """
         # TODO: Write the forward pass logic for your model
         # TODO: Calculate, then return, the probability for each class per image using the Softmax equation
+        #self.batch_size = inputs.shape[0]
         self.batch_size = inputs.shape[0]
 
         L = np.ndarray((self.batch_size, self.num_classes), dtype=np.float32)
@@ -157,7 +158,7 @@ def train(model, train_inputs, train_labels):
     # TODO: Iterate over the training inputs and labels, in model.batch_size increments
     # TODO: For every batch, compute then descend the gradients for the model's weights
     batch = 0
-    model.batch_size = train_inputs.shape[0]
+    #model.batch_size = train_inputs.shape[0]
 
     while batch < train_labels.size:
         batch_inputs = train_inputs[batch : batch + model.batch_size]
@@ -181,8 +182,6 @@ def test(model, test_inputs, test_labels):
     """
     # TODO: Iterate over the testing inputs and labels
     # TODO: Return accuracy across testing set
-
-    model.batch_size = test_labels.size
     probs = model.call(test_inputs)
 
     return model.accuracy(probs, test_labels)
