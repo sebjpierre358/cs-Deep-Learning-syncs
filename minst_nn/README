@@ -3,5 +3,8 @@ README
 After one epoch, the accuracy of the model is
 90.53%
 
-The training takes ~4mins on a dept machine most likely due to a
-sub-optimal backpropogation implementation. Other than that, no bugs
+The training takes ~4mins on my personal computer. I made sure to test the
+model on a test python file that imports assignment.py and preprocess.py and
+trains and tests, which also consistently produced a 90.53% accuracy.
+I attempted to test on a dept machine and the accuracy decreased to ~10% each
+time for some reason. Other than this, no bugs
