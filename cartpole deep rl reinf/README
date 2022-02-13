@@ -1,0 +1,15 @@
+README
+HW6 - POLICY GRAD. RL
+
+REINFORCE Train Time (Personal Machine):  ~3mins
+          Average Last 50 Reward Totals:   +300
+
+RWB Train Time (PC): >3mins
+Avg Last 50 Reward: ~400
+
+Previous versions of the model used 2 fully connected layers, and this ran
+in a couple mins on desktop and performed great, but took +7 mins for the
+autograder. Seems its not totally necessary for this RL task
+
+Also, training curves for REINFORCE tend to ramp up to 500 really quick and
+stays there with the a big dip in performance in between before recovering.
